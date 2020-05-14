@@ -17,44 +17,76 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-public abstract class JGraph extends JPanel {
-	private final Layout algo;
+public abstract class JGraph<N> extends JPanel {
+	private Layout<N> layout;
 	public long pauseDurationMs = 30;
 	Stroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-	private Node selectedNode;
+	Node<N> selectedNode;
+	Map<N, Node<N>> nodes = new HashMap<>();
 
 	int mt, mr, mb, ml;
 	Rectangle layoutArea;
-	public final List<Node> nodes = new ArrayList<>();
-	public final Map<Node, Set<Node>> adj = new HashMap<>();
+
+	public static Stroke line = new BasicStroke();
+	final static float dash1[] = {10.0f};
+	public static Stroke dotted = new BasicStroke(1.0f,
+            BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER,
+            10.0f, dash1, 0.0f);
 
 	public JGraph() {
-		this(new SpringLayout());
+		this(new WanderingNodes<N>());
 	}
 
-	Map<Object, Node> value_node = new HashMap<>();
+	void setLayout(Layout<N> l) {
+		this.layout = l;
 
-	public Node lookupNode(Object value) {
-		return value_node.get(value);
+		for (Node<N> n : nodes()) {
+			n.layoutSpecifics = l.createSpecific();
+		}
 	}
 
-	public JGraph(Layout algo) {
-		this.algo = algo;
+	public void connect(N src, N dest) {
+		Node<N> u = ensureExists(src);
+		Node<N> v = ensureExists(dest);
+		u.successors.add(v);
+	}
+
+	public Node<N> add(N u) {
+		return ensureExists(u);
+	}
+
+	public void remove(N u) {
+		nodes.remove(u);
+
+		for (Node<N> n : nodes()) {
+			n.successors.remove(u);
+		}
+	}
+
+	protected Node<N> ensureExists(N o) {
+		Node<N> n = nodes.get(o);
+
+		if (n == null) {
+			nodes.put(o, n = new Node<N>(o));
+			n.layoutSpecifics = layout.createSpecific();
+		}
+
+		return n;
+	}
+
+	public JGraph(Layout<N> algo) {
+		this.layout = algo;
 		setBorder(new EmptyBorder(mr, ml, mb, mr));
 
 		addMouseListener(new MouseAdapter() {
@@ -68,7 +100,6 @@ public abstract class JGraph extends JPanel {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				selectedNode.isSelected = false;
 				removeMouseMotionListener(ml);
 				selectedNode = null;
 			}
@@ -76,22 +107,21 @@ public abstract class JGraph extends JPanel {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				selectedNode = findClosestNode(e.getX(), e.getY());
-				selectedNode.isSelected = true;
 				addMouseMotionListener(ml);
 			}
 
-			private Node findClosestNode(int x, int y) {
+			private Node<N> findClosestNode(int x, int y) {
 				double minD = Double.MAX_VALUE;
-				Node minN = null;
+				Node<N> minN = null;
 
-				for (Node n : nodes) {
-					double dx = Math.abs(x - n.x);
-					double dy = Math.abs(y - n.y);
+				for (Node<N> u : nodes.values()) {
+					double dx = Math.abs(x - u.x);
+					double dy = Math.abs(y - u.y);
 					double d = Math.sqrt(dx * dx + dy * dy);
 
 					if (d < minD) {
 						minD = d;
-						minN = n;
+						minN = u;
 					}
 				}
 
@@ -100,37 +130,49 @@ public abstract class JGraph extends JPanel {
 		});
 	}
 
-	public void start() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				int nbSteps = 0;
+	public void updateValues() {
+		for (Node<N> n : nodes()) {
+			ImageIcon icon = getIcon(n.o);
 
-				while (true) {
-					if (isVisible()) {
-						updateLayoutArea();
-
-						if (layoutArea.width > 0 && layoutArea.height > 0) {
-							if (nbSteps == 0) {
-								shuffle(new Random());
-							}
-
-							algo.step(JGraph.this, layoutArea);
-							algo.center(JGraph.this, layoutArea);
-							++nbSteps;
-						}
-					}
-
-					repaint();
-
-					try {
-						Thread.sleep(pauseDurationMs);
-					}
-					catch (InterruptedException e) {
-					}
-				}
+			if (n.originalIcon != icon) {
+				n.originalIcon = icon;
+				n.rescaledIcon = null;
 			}
 
+			n.size = getSize(n.o);
+			n.text = getText(n.o);
+			n.color = getLineColor(n.o);
+			n.fillColor = getFillColor(n.o);
+		}
+	}
+
+	public void start() {
+		new Thread(() -> {
+			int nbSteps = 0;
+
+			while (true) {
+				if (isVisible()) {
+					updateLayoutArea();
+
+					if (layoutArea.width > 0 && layoutArea.height > 0) {
+						if (nbSteps == 0) {
+							shuffle(new Random());
+						}
+
+						layout.step(JGraph.this, layoutArea);
+						layout.center(JGraph.this, layoutArea);
+						++nbSteps;
+					}
+				}
+
+				repaint();
+
+				try {
+					Thread.sleep(pauseDurationMs);
+				}
+				catch (InterruptedException e) {
+				}
+			}
 		}).start();
 	}
 
@@ -164,110 +206,103 @@ public abstract class JGraph extends JPanel {
 	// RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
 	private void doDrawing(Graphics g) {
+		updateValues();
 		Graphics2D g2 = (Graphics2D) g;
 		// g2.setRenderingHints(rh);
+		g2.setStroke(stroke);
 
-		for (EdgeCursor e : edges()) {
-			int t = getArcType(e.src, e.dest);
-
-			if (t != 0) {
-				g2.drawLine((int) e.src.x, (int) e.src.y, (int) e.dest.x, (int) e.dest.y);
+		for (Node<N> u : nodes()) {
+			for (Node<N> v : u.successors) {
+				Color edgeColor = getEdgeColor(u, v);
+				Stroke edgeStroke = getEdgeStroke(u, v);
+				g2.setStroke(edgeStroke);
+				g2.setColor(edgeColor);
+				g2.drawLine(u.x, u.y, v.x, v.y);
 			}
 		}
 
-		g2.setStroke(stroke);
-
-		for (Node u : nodes) {
-			int usize = getSize(u);
-
-			if (usize == 0) {
-				// do nothing, node is invisible
+		for (Node<N> u : nodes()) {
+			if (u.size == 0) {
+				// do nothing, node can't be seen
 			}
-			else if (usize == 1) {
+			else if (u.size == 1) {
 				// draw a point
 				g.drawLine(u.x, u.y, u.x, u.y);
 			}
+			else if (u.originalIcon != null) {
+				if (u.rescaledIcon == null) {
+					u.rescaledIcon = new ImageIcon(
+							u.originalIcon.getImage().getScaledInstance( - 1, u.size, 0));
+				}
+
+				g.drawImage(u.rescaledIcon.getImage(),
+						(int) (u.x - u.rescaledIcon.getIconWidth() / 2),
+						(int) (u.y - u.rescaledIcon.getIconHeight() / 2), this);
+			}
+			else if (u.text != null) {
+				GlyphVector vec = GlyphVectorCache.get(u.text);
+
+				if (vec == null) {
+					FontRenderContext frc = g2.getFontRenderContext();
+					Font font = getFont().deriveFont((float) u.size);
+					vec = font.createGlyphVector(frc, u.text);
+					GlyphVectorCache.put(u.text, vec);
+				}
+
+				int gap = 6;
+				int textW = (int) vec.getVisualBounds().getWidth();
+				int textH = (int) vec.getVisualBounds().getHeight();
+
+				if (u.fillColor != null) {
+					g.setColor(u.fillColor);
+					g2.fillRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
+							textW + 2 * gap, textH + 2 * gap);
+				}
+
+				if (u.color != null) {
+					g.setColor(u.color);
+					g2.drawRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
+							textW + 2 * gap, textH + 2 * gap);
+					g2.drawGlyphVector(vec, u.x - textW / 2, u.y + textH / 2 + 2);
+				}
+
+			}
 			else {
-				if ( ! u.icon_rescaled) {
-					u.icon = getIcon(u);
+				Color fillColor = u.fillColor;
 
-					if (u.icon != null) {
-						u.icon = new ImageIcon(
-								u.icon.getImage().getScaledInstance( - 1, usize, 0));
-					}
-
-					u.icon_rescaled = true;
+				if (fillColor != null) {
+					g.setColor(fillColor);
+					g.fillOval(u.x - u.size / 2, u.y - u.size / 2, u.size, u.size);
 				}
 
-				if (u.icon != null) {
-					g.drawImage(u.icon.getImage(), (int) u.x - u.icon.getIconWidth() / 2,
-							(int) u.y - u.icon.getIconHeight() / 2, this);
+				Color lineColor = u.color;
+
+				if (lineColor != null) {
+					g.setColor(lineColor);
+					g.drawOval(u.x - u.size / 2, u.y - u.size / 2, u.size, u.size);
 				}
-
-				String text = getText(u);
-
-				if (text == null) {
-					Color fillColor = getFillColor(u);
-
-					if (fillColor != null) {
-						g.setColor(fillColor);
-						g.fillOval(u.x - usize / 2, u.y - usize / 2, usize, usize);
-					}
-
-					Color lineColor = getLineColor(u);
-
-					if (lineColor != null) {
-						g.setColor(getLineColor(u));
-						g.drawOval(u.x - usize / 2, u.y - usize / 2, usize, usize);
-					}
-				}
-				else {
-					text = text.trim();
-
-					if (text.length() > 0) {
-						GlyphVector vec = GlyphVectorCache.get(text);
-
-						if (vec == null) {
-							FontRenderContext frc = g2.getFontRenderContext();
-							Font font = getFont().deriveFont((float) usize);
-							vec = font.createGlyphVector(frc, text);
-							GlyphVectorCache.put(text, vec);
-						}
-
-						g.setColor(getFillColor(u));
-						int gap = 6;
-						int textW = (int) vec.getVisualBounds().getWidth();
-						int textH = (int) vec.getVisualBounds().getHeight();
-						g2.fillRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
-								textW + 2 * gap, textH + 2 * gap);
-						g.setColor(getLineColor(u));
-						g2.drawRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
-								textW + 2 * gap, textH + 2 * gap);
-
-						g2.drawGlyphVector(vec, u.x - textW / 2, u.y + textH / 2 + 2);
-					}
-				}
-
 			}
 		}
 	}
 
-	protected abstract Color getLineColor(Node u);
+	protected abstract Color getLineColor(N u);
 
-	protected abstract Color getFillColor(Node u);
+	protected abstract Color getEdgeColor(Node<N> u, Node<N> v);
 
-	protected abstract int getArcType(Node src, Node dest);
+	protected abstract Stroke getEdgeStroke(Node<N> u, Node<N> v);
 
-	protected abstract int getSize(Node u);
+	protected abstract Color getFillColor(N u);
+
+	protected abstract int getSize(N u);
 
 	private static Map<String, GlyphVector> GlyphVectorCache = new HashMap<>();
 
-	protected abstract String getText(Node u);
+	protected abstract String getText(N u);
 
-	protected abstract ImageIcon getIcon(Node u);
+	protected abstract ImageIcon getIcon(N u);
 
 	public void shuffle(Random prng) {
-		for (Node u : nodes) {
+		for (Node<N> u : nodes.values()) {
 			u.x = prng.nextInt(layoutArea.width) + layoutArea.x;
 			u.y = prng.nextInt(layoutArea.height) + layoutArea.y;
 		}
@@ -276,117 +311,27 @@ public abstract class JGraph extends JPanel {
 	public JComponent getControls() {
 		JPanel p = new JPanel(new GridLayout(2, 1));
 		p.add(new GraphControls(this));
-		p.add(algo.getControls());
+		p.add(layout.getControls());
 		return p;
 	}
 
-	public JComponent getBundleComponent() {
+	public JComponent bundleComponent() {
 		JPanel p = new JPanel(new BorderLayout());
 		p.add(this, BorderLayout.CENTER);
 		p.add(getControls(), BorderLayout.SOUTH);
 		return p;
 	}
 
-	public Node createNode(Object e) {
-		return algo.createNode(e);
+	public boolean isArc(Node<N> u, Node<N> v) {
+		return u.successors.contains(v);
 	}
 
-	public void removedge(Node src, Node dest) {
-		adj.get(dest).remove(dest);
+	public boolean connected(Node<N> u, Node<N> v) {
+		return isArc(u, v) || isArc(v, u);
 	}
 
-	protected Iterable<EdgeCursor> edges() {
-		return () -> new Iterator<EdgeCursor>() {
-			final EdgeCursor ec = new EdgeCursor();
-			boolean hasNext;
-			Iterator<Entry<Node, Set<Node>>> entryIterator = adj.entrySet().iterator();
-			Iterator<Node> currentListIterator;
-			Node nextSrc, nextDest;
-
-			{
-				if (entryIterator.hasNext()) {
-					Entry<Node, Set<Node>> e = entryIterator.next();
-					nextSrc = e.getKey();
-					currentListIterator = e.getValue().iterator();
-					findNext();
-				}
-			}
-
-			@Override
-			public boolean hasNext() {
-				return hasNext;
-			}
-
-			private void findNext() {
-				if (currentListIterator.hasNext()) {
-					nextDest = currentListIterator.next();
-					hasNext = true;
-				}
-				else {
-					if (entryIterator.hasNext()) {
-						Entry<Node, Set<Node>> currentEntry = entryIterator.next();
-						nextSrc = currentEntry.getKey();
-						currentListIterator = currentEntry.getValue().iterator();
-						findNext();
-					}
-					else {
-						hasNext = false;
-					}
-				}
-			}
-
-			@Override
-			public EdgeCursor next() {
-				ec.src = nextSrc;
-				ec.dest = nextDest;
-				findNext();
-				return ec;
-			}
-		};
+	public Collection<Node<N>> nodes() {
+		return nodes.values();
 	}
 
-	public void addNodes(Iterable nodes) {
-		for (Object o : nodes) {
-			addNode(o);
-		}
-
-	}
-
-	public void addNodes(Object... values) {
-		for (Object o : values) {
-			addNode(o);
-		}
-
-	}
-
-	public Node addNode(Object o) {
-		Node n = algo.createNode(o);
-		nodes.add(n);
-		return n;
-	}
-
-	public void addEdge(Object src, Object dest) {
-		addEdge(ensureExists(src), ensureExists(dest));
-	}
-
-	private Node ensureExists(Object e) {
-		Node n = lookupNode(e);
-
-		if (n == null) {
-			return addNode(e);
-		}
-		else {
-			return null;
-		}
-	}
-
-	private void addEdge(Node src, Node dest) {
-		Set<Node> adjList = adj.get(src);
-
-		if (adjList == null) {
-			adj.put(src, adjList = new HashSet<>());
-		}
-
-		adjList.add(dest);
-	}
 }

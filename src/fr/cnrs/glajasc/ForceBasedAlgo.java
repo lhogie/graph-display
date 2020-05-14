@@ -2,7 +2,7 @@ package fr.cnrs.glajasc;
 
 import javax.swing.JComponent;
 
-public abstract class ForceBasedAlgo extends Layout
+public abstract class ForceBasedAlgo<N> extends Layout<N>
 {
 	protected double attractionFactor = 0.9;
 	protected double repulsionFactor = 1.1;

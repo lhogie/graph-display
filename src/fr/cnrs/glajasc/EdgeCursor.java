@@ -1,9 +1,11 @@
 package fr.cnrs.glajasc;
 
-public class EdgeCursor
-{
-	public int index;
-	public Node src, dest;
-	public Object data;
+import java.awt.Color;
+import java.awt.Stroke;
 
+public class EdgeCursor<N> {
+	public int index;
+	public Node<N> src, dest;
+	public Stroke stroke;
+	public Color color;
 }

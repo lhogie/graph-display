@@ -11,13 +11,11 @@ import javax.swing.JComponent;
  *
  */
 
-public abstract class Layout
-{
+public abstract class Layout<N> {
 	/*
-	 * What does each step of the algorithm. Returns the number of changes done
-	 * during this step.
+	 * What does each step of the algorithm.
 	 */
-	public abstract long step(JGraph g, Rectangle r);
+	public abstract long step(JGraph<N> g, Rectangle r);
 
 	/*
 	 * Returns a Swing component which contains the graphical controllers for
@@ -26,29 +24,27 @@ public abstract class Layout
 	public abstract JComponent getControls();
 
 	/*
-	 * create a node class specific to this algo.
+	 * create an instance holding specific layout data for a node.
 	 */
-	public Node createNode(Object e)
-	{
-		return new Node(e);
-	}
+	public abstract Object createSpecific();
 
-	public void run(JGraph g, Rectangle r)
-	{
+	public void run(JGraph<N> g, Rectangle r) {
 		while (step(g, r) > 0)
 			;
 	}
 
-	public void center(JGraph g, Rectangle r)
-	{
+	public void center(JGraph<N> g, Rectangle r) {
 		int x = 0, y = 0;
 		int nbNodes = 0;
 
-		for (Node n : g.nodes)
-		{
+		for (Node<N> n : g.nodes.values()) {
 			x += n.x;
 			y += n.y;
 			++nbNodes;
+		}
+		
+		if (nbNodes == 0) {
+			return;
 		}
 
 		x /= nbNodes;
@@ -57,11 +53,9 @@ public abstract class Layout
 		int xshift = r.width / 2 - x;
 		int yshift = r.height / 2 - y;
 
-		for (Node n : g.nodes)
-		{
+		for (Node<N> n : g.nodes.values()) {
 			n.x += xshift;
 			n.y += yshift;
 		}
 	}
-
 }

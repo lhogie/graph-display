@@ -6,43 +6,35 @@ import java.util.Random;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-public class WanderingNodes extends Layout
-{
-	class MoveNode extends Node
-	{
+public class WanderingNodes<N> extends Layout<N> {
+	class MoveNode {
 		int dx, dy;
-
-		public MoveNode(Object e)
-		{
-			super(e);
-		}
 	}
 
 	Random prng = new Random();
 
 	@Override
-	public long step(JGraph g, Rectangle r)
-	{
-		for (Node u : g.nodes)
-		{
-			if (u.isSelected)
+	public long step(JGraph<N> g, Rectangle r) {
+		long nbChanges = 0;
+		
+		for (Node<N> u : g.nodes()) {
+			if (g.selectedNode == u) {
 				continue;
+			}
 
-			MoveNode mm = (MoveNode) u;
+			MoveNode mm = (MoveNode) u.layoutSpecifics;
 
 			mm.dx += prng.nextInt(3) - 1;
 			u.x += mm.dx;
 
 			// hits left wall
-			if (u.x < r.x)
-			{
+			if (u.x < r.x) {
 				u.x = r.x;
 				mm.dx = mm.dy = 0;
 			}
 
 			// hits right wall
-			if (u.x > r.x + r.width)
-			{
+			if (u.x > r.x + r.width) {
 				u.x = r.x + r.width;
 				mm.dx = mm.dy = 0;
 			}
@@ -51,33 +43,31 @@ public class WanderingNodes extends Layout
 			u.y += mm.dy;
 
 			// hits roof wall
-			if (u.y < r.y)
-			{
+			if (u.y < r.y) {
 				u.y = r.y;
 				mm.dx = mm.dy = 0;
 			}
 
 			// hits bottom wall
-			if (u.y > r.y + r.height)
-			{
+			if (u.y > r.y + r.height) {
 				u.y = r.y + r.height;
 				mm.dx = mm.dy = 0;
 			}
+			
+			++nbChanges;
 		}
-
-		return g.nodes.size();
+		
+		return nbChanges;
 	}
 
 	@Override
-	public JComponent getControls()
-	{
+	public JComponent getControls() {
 		return new JLabel("no algo control");
 	}
 
 	@Override
-	public Node createNode(Object e)
-	{
-		return new MoveNode(e);
+	public Object createSpecific() {
+		return new MoveNode();
 	}
 
 }

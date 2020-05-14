@@ -2,39 +2,32 @@ package fr.cnrs.glajasc;
 
 import java.awt.Rectangle;
 
-public class BarycenterLayout extends ForceBasedAlgo
-{
+public class BarycenterLayout<N> extends ForceBasedAlgo<N> {
 
 	@Override
-	public long step(JGraph g, Rectangle r)
-	{
+	public long step(JGraph<N> g, Rectangle r) {
 		long n = 0;
 
-		for (Node u : g.nodes)
-		{
+		for (Node<N> u : g.nodes()) {
 			double xA = 0, yA = 0, xR = 0, yR = 0;
 			int nbA = 0, nbR = 0;
 
-			for (Node v : g.nodes)
-			{
-				if (u != v)
-				{
-					boolean neighbors = g.getArcType(u, v) != 0 || g.getArcType(v, u) != 0;
+			for (Node<N> v : g.nodes()) {
+				if (u != v) {
+					boolean neighbors = g.connected(u, v);
 
-					if (neighbors)
-					{
+					if (neighbors) {
 						xA += v.x;
 						yA += v.y;
 						++nbA;
 					}
-					else
-					{
+					else {
 						xR += v.x;
 						yR += v.y;
 						++nbR;
 					}
 
-					double fX = (xA + xR) ;
+					double fX = (xA + xR);
 					double fY = (yA + yR);
 
 					if (fX != u.x || fY != u.y)
@@ -42,7 +35,7 @@ public class BarycenterLayout extends ForceBasedAlgo
 
 					u.x = (int) fX;
 					u.y = (int) fY;
-					System.out.println(u.x  + " ," + u.y);
+					System.out.println(u.x + " ," + u.y);
 				}
 			}
 		}
@@ -50,8 +43,7 @@ public class BarycenterLayout extends ForceBasedAlgo
 		return n;
 	}
 
-	private double ensureBounds(double x, double lb, double up)
-	{
+	private double ensureBounds(double x, double lb, double up) {
 		if (x < lb)
 			return lb;
 
@@ -59,5 +51,10 @@ public class BarycenterLayout extends ForceBasedAlgo
 			return up;
 
 		return x;
+	}
+
+	@Override
+	public Object createSpecific() {
+		return null;
 	}
 }

@@ -2,26 +2,21 @@ package fr.cnrs.glajasc;
 
 import java.awt.Rectangle;
 
-public class SpringLayout extends ForceBasedAlgo
-{
+public class SpringLayout<N> extends ForceBasedAlgo<N> {
 
 	@Override
-	public long step(JGraph g, Rectangle r)
-	{
+	public long step(JGraph<N> g, Rectangle r) {
 		long n = 0;
 		double maxDistance = Math.sqrt(r.width * r.width + r.height * r.height);
 
-		for (Node u : g.nodes)
-		{
-			for (Node v : g.nodes)
-			{
-				if (u != v)
-				{
+		for (Node<N> u : g.nodes()) {
+			for (Node<N> v : g.nodes()) {
+				if (u != v) {
 					double dx = v.x - u.x;
 					double dy = v.y - u.y;
 					double d = Math.sqrt(dx * dx + dy * dy);
 
-					boolean neighbors = g.getArcType(u, v) != 0;
+					boolean neighbors = g.connected(u, v);
 
 					double factor = neighbors ? attractionFactor : repulsionFactor;
 
@@ -43,8 +38,7 @@ public class SpringLayout extends ForceBasedAlgo
 		return n;
 	}
 
-	private double ensureBounds(double x, double lb, double up)
-	{
+	private double ensureBounds(double x, double lb, double up) {
 		if (x < lb)
 			return lb;
 
@@ -52,5 +46,10 @@ public class SpringLayout extends ForceBasedAlgo
 			return up;
 
 		return x;
+	}
+
+	@Override
+	public Object createSpecific() {
+		return null;
 	}
 }
