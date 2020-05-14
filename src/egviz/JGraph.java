@@ -110,8 +110,9 @@ public abstract class JGraph extends JPanel {
 						updateLayoutArea();
 
 						if (layoutArea.width > 0 && layoutArea.height > 0) {
-							if (nbSteps == 0)
+							if (nbSteps == 0) {
 								shuffle(new Random());
+							}
 
 							algo.step(JGraph.this, layoutArea);
 							algo.center(JGraph.this, layoutArea);

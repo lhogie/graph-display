@@ -12,7 +12,7 @@ public class DemoCilque {
 		int n = side * side;
 
 		// creates a graphical graph using "wandering nodes" layout algorithm
-		JGraph g = new JGraph(new SpringLayout2()) {
+		JGraph g = new JGraph(new WanderingNodes()) {
 			@Override
 			public int getArcType(Node src, Node dest) {
 //				return 1;
