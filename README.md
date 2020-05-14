@@ -4,6 +4,7 @@
 
 GLaJaSC is a Java Swing Component aimed at displaying graphs (e.g. nodes connected to each others). Its design objectives are to make it easy to use, extend and useful in the context of experimenting with graph layout algorithms. It is developped at the Cnrs / I3S Compouter Science lab / Université Côte d'Azur / Inria. 
 
+
 # Features
 Main features of GLaJaSC include:
 - It is written in 100% Java 8 (which still is the most used JDK today).
@@ -14,4 +15,5 @@ Main features of GLaJaSC include:
 - Nodes can be rendererd using their text label, color, fill color, size and icon. All of these are optional.
 - layout algorithms' controls can be represented as GUI widgets, allowing to control the behavior of the layout algorithm in an interactive manner.
 - vertices can be selected and dragged using the mouse (thereby forcing their x,y position), independantly of the layout algorithms.
+- displayed graph can change at runtime, in size, in connectivity, colors, etc..
 

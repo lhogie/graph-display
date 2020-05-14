@@ -41,6 +41,7 @@ public abstract class JGraph extends JPanel {
 	int mt, mr, mb, ml;
 	Rectangle layoutArea;
 	public final List<Node> nodes = new ArrayList<>();
+	public final Map<Node, Set<Node>> adj = new HashMap<>();
 
 	public JGraph() {
 		this(new SpringLayout());
@@ -199,6 +200,8 @@ public abstract class JGraph extends JPanel {
 				}
 
 				if (u.icon != null) {
+					System.out.println("iconnnn");
+System.out.println(u.icon.getIconWidth() / 2);
 					g.drawImage(u.icon.getImage(), (int) u.x - u.icon.getIconWidth() / 2,
 							(int) u.y - u.icon.getIconHeight() / 2, this);
 				}
@@ -353,8 +356,6 @@ public abstract class JGraph extends JPanel {
 		nodes.add(n);
 		return n;
 	}
-
-	Map<Node, Set<Node>> adj = new HashMap<>();
 
 	public void addEdge(Object src, Object dest) {
 		addEdge(ensureExists(src), ensureExists(dest));
