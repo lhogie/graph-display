@@ -1,11 +1,11 @@
-## Graph Layout Java Swing Component
+## GLaJaSC: Graph Layout Java Swing Component
 
 # Description
 
-XXX is a Java Swing Component aimed at displaying graphs (e.g. nodes connected to each others). Its design objectives are to make it easy to use, extend and useful in the context of experimenting with graph layout algorithms. It is developped at the Cnrs / I3S Compouter Science lab / Université Côte d'Azur / Inria. 
+GLaJaSC is a Java Swing Component aimed at displaying graphs (e.g. nodes connected to each others). Its design objectives are to make it easy to use, extend and useful in the context of experimenting with graph layout algorithms. It is developped at the Cnrs / I3S Compouter Science lab / Université Côte d'Azur / Inria. 
 
 # Features
-Main features of XXX include:
+Main features of GLaJaSC include:
 - It is written in 100% Java 8 (which still is the most used JDK today).
 - It is designed to be efficient, so as to allow the display of very large graphs.
 - It is a standard Swing component, which make it embeddable in any Java application (Eclipse application will need an adapter).
