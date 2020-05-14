@@ -36,7 +36,7 @@ public class DemoCilque {
 			}
 
 			@Override
-			public Color getColor(Node u) {
+			public Color getLineColor(Node u) {
 				return Color.black;
 			}
 

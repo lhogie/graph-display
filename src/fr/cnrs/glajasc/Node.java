@@ -11,7 +11,7 @@ public class Node
 
 	int x, y;
 	public ImageIcon icon;
-	public boolean icon_processed;
+	public boolean icon_rescaled;
 	boolean isSelected;
 	public Object data;
 	public Object text;

@@ -181,14 +181,14 @@ public abstract class JGraph extends JPanel {
 			int usize = getSize(u);
 
 			if (usize == 0) {
-				// do nothing
+				// do nothing, node is invisible
 			}
 			else if (usize == 1) {
 				// draw a point
 				g.drawLine(u.x, u.y, u.x, u.y);
 			}
 			else {
-				if ( ! u.icon_processed) {
+				if ( ! u.icon_rescaled) {
 					u.icon = getIcon(u);
 
 					if (u.icon != null) {
@@ -196,19 +196,32 @@ public abstract class JGraph extends JPanel {
 								u.icon.getImage().getScaledInstance( - 1, usize, 0));
 					}
 
-					u.icon_processed = true;
+					u.icon_rescaled = true;
 				}
 
 				if (u.icon != null) {
-					System.out.println("iconnnn");
-System.out.println(u.icon.getIconWidth() / 2);
 					g.drawImage(u.icon.getImage(), (int) u.x - u.icon.getIconWidth() / 2,
 							(int) u.y - u.icon.getIconHeight() / 2, this);
 				}
 
 				String text = getText(u);
 
-				if (text != null) {
+				if (text == null) {
+					Color fillColor = getFillColor(u);
+
+					if (fillColor != null) {
+						g.setColor(fillColor);
+						g.fillOval(u.x - usize / 2, u.y - usize / 2, usize, usize);
+					}
+
+					Color lineColor = getLineColor(u);
+
+					if (lineColor != null) {
+						g.setColor(getLineColor(u));
+						g.drawOval(u.x - usize / 2, u.y - usize / 2, usize, usize);
+					}
+				}
+				else {
 					text = text.trim();
 
 					if (text.length() > 0) {
@@ -227,24 +240,19 @@ System.out.println(u.icon.getIconWidth() / 2);
 						int textH = (int) vec.getVisualBounds().getHeight();
 						g2.fillRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
 								textW + 2 * gap, textH + 2 * gap);
-						g.setColor(getColor(u));
+						g.setColor(getLineColor(u));
 						g2.drawRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
 								textW + 2 * gap, textH + 2 * gap);
+
 						g2.drawGlyphVector(vec, u.x - textW / 2, u.y + textH / 2 + 2);
 					}
 				}
 
-				else {
-					g.setColor(getFillColor(u));
-					g.fillOval(u.x - usize / 2, u.y - usize / 2, usize, usize);
-					g.setColor(getColor(u));
-					g.drawOval(u.x - usize / 2, u.y - usize / 2, usize, usize);
-				}
 			}
 		}
 	}
 
-	protected abstract Color getColor(Node u);
+	protected abstract Color getLineColor(Node u);
 
 	protected abstract Color getFillColor(Node u);
 

@@ -12,8 +12,8 @@ Main features of GLaJaSC include:
 - It is a standard Swing component, which make it embeddable in any Java application (Eclipse application will need an adapter).
 - It relies on a polished object-oriented architecture.
 - It usage is no intrusive, meaning that you don't need to change your application code to display you data: any object can be added to the displayed graph.
-- Nodes can be rendererd using their text label, color, fill color, size and icon. All of these are optional.
+- Nodes can be rendererd using their text label, color, fill color, size and a thumbnail image. All of these are optional.
 - layout algorithms' controls can be represented as GUI widgets, allowing to control the behavior of the layout algorithm in an interactive manner.
 - vertices can be selected and dragged using the mouse (thereby forcing their x,y position), independantly of the layout algorithms.
-- displayed graph can change at runtime, in size, in connectivity, colors, etc..
+- displayed graph can change at runtime, in size, in connectivity, colors, thumbnail, etc..
 

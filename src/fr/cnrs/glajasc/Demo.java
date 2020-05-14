@@ -16,17 +16,27 @@ public class Demo {
 		JGraph g = new JGraph(new WanderingNodes()) {
 			@Override
 			protected String getText(Node u) {
+				if (u.data.equals("animal")) {
+					return null;
+				}
+
 				return u.data.toString();
 			}
 
 			@Override
 			protected int getSize(Node u) {
-				return 5 * getText(u).length();
+				String text = getText(u);
+
+				if (text == null) {
+					return 100;
+				}
+
+				return 5 * text.length();
 			}
 
 			@Override
 			protected ImageIcon getIcon(Node u) {
-				if (getText(u).equals("animal")) {
+				if (u.data.equals("animal")) {
 					return animal;
 				}
 
@@ -37,7 +47,10 @@ public class Demo {
 			protected Color getFillColor(Node u) {
 				String text = getText(u);
 
-				if (text.equalsIgnoreCase("red")) {
+				if (text == null) {
+					return null;
+				}
+				else if (text.equalsIgnoreCase("red")) {
 					return Color.red;
 				}
 				else if (text.equalsIgnoreCase("yellow")) {
@@ -50,13 +63,13 @@ public class Demo {
 					return Color.white;
 				}
 				else {
-					return Color.white;
+					return null;
 				}
 			}
 
 			@Override
-			protected Color getColor(Node u) {
-				return Color.black;
+			protected Color getLineColor(Node u) {
+				return getText(u) == null ? null : Color.black;
 			}
 
 			@Override
