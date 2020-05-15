@@ -1,12 +1,12 @@
-## GLaJaSC: Graph Layout Java Swing Component
+## SwingGraph:  a Java Swing Component for Graph Layout
 
 # Description
 
-GLaJaSC is a Java Swing Component aimed at displaying dynamic graphs (e.g. nodes connected to each others). Its design objectives are to make it easy to use, extend and useful in the context of experimenting with graph layout algorithms. It is developped at the Cnrs / I3S Compouter Science lab / Université Côte d'Azur / Inria. 
+SwingGraph is a Java Swing Component aimed at displaying dynamic graphs (e.g. nodes connected to each others). Its design objectives are to make it easy to use, extend and useful in the context of experimenting with graph layout algorithms. It is developped at the Cnrs / I3S Compouter Science lab / Université Côte d'Azur / Inria. 
 
 
 # Features
-Main features of GLaJaSC include:
+Main features of SwingGraph include:
 - It is written in 100% Java 8 (which still is the most used JDK today).
 - Supports mixed graphs (graphs with edge of various nature)
 - Supports dynamic graphs (in terms of in size, connectivity, colors, thumbnail, etc).
