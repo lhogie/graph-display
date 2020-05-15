@@ -1,25 +1,23 @@
 package fr.cnrs.swinggraph.demo;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import javax.swing.JFrame;
 
 import fr.cnrs.swinggraph.DefaultGraph;
 import fr.cnrs.swinggraph.Graph;
 import fr.cnrs.swinggraph.GraphComponent;
 
-public class Demo1 {
+public class Demo4_stringgraph {
 	public static void main(String[] args) {
-		System.out.println("Running " + Demo1.class);
-		
-		Graph<Integer> g = new DefaultGraph<>();
+		System.out.println("Running " + Demo4_stringgraph.class);
 
-		// create 100 edges
-		for (int i = 0; i < 100; ++i) {
-			g.connect(i, ThreadLocalRandom.current().nextInt(100));
+		String s = "my graph";
+		Graph<Character> g = new DefaultGraph<>();
+
+		for (int i = 1; i < s.length(); ++i) {
+			g.connect(s.charAt(i - 1), s.charAt(i));
 		}
 
-		JFrame f = new JFrame("Just a graph of ints");
+		JFrame f = new JFrame("Just a graph");
 		f.setSize(800, 600);
 		f.setContentPane(new GraphComponent<>(g).bundleComponent());
 		f.setVisible(true);

@@ -24,5 +24,6 @@ public class Node<N> {
 	public Color fillColor;
 	public Color color;
 	public boolean textBox = true;
+	public boolean mobile = true;
 
 }

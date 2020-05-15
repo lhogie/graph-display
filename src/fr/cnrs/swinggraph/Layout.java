@@ -15,7 +15,7 @@ public abstract class Layout<N> {
 	/*
 	 * What does each step of the algorithm.
 	 */
-	public abstract long step(GraphComponent<N> g, Rectangle r);
+	public abstract long step(Graph<N> g, Rectangle r);
 
 	/*
 	 * Returns a Swing component which contains the graphical controllers for
@@ -28,16 +28,16 @@ public abstract class Layout<N> {
 	 */
 	public abstract Object createSpecific();
 
-	public void run(GraphComponent<N> g, Rectangle r) {
+	public void run(Graph<N> g, Rectangle r) {
 		while (step(g, r) > 0)
 			;
 	}
 
-	public void center(GraphComponent<N> g, Rectangle r) {
+	public void center(Graph<N> g, Rectangle r) {
 		int x = 0, y = 0;
 		int nbNodes = 0;
 
-		for (Node<N> n : g.getGraph().nodes()) {
+		for (Node<N> n : g.nodes()) {
 			x += n.x;
 			y += n.y;
 			++nbNodes;
@@ -53,7 +53,7 @@ public abstract class Layout<N> {
 		int xshift = r.width / 2 - x;
 		int yshift = r.height / 2 - y;
 
-		for (Node<N> n : g.getGraph().nodes()) {
+		for (Node<N> n : g.nodes()) {
 			n.x += xshift;
 			n.y += yshift;
 		}

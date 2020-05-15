@@ -14,11 +14,11 @@ public class WanderingNodes<N> extends Layout<N> {
 	Random prng = new Random();
 
 	@Override
-	public long step(GraphComponent<N> g, Rectangle r) {
+	public long step(Graph<N> g, Rectangle r) {
 		long nbChanges = 0;
 
-		for (Node<N> u : g.getGraph().nodes()) {
-			if (g.selectedNode == u) {
+		for (Node<N> u : g.nodes()) {
+			if ( ! u.mobile) {
 				continue;
 			}
 

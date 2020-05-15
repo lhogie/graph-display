@@ -20,21 +20,20 @@ public class Demo3_growing {
 		f.setSize(800, 600);
 		f.setContentPane(c.bundleComponent());
 		f.setVisible(true);
-		c.maxEdges = 10;
+		c.maxEdges = 500;
 
 		g.addNode(0);
 		f.setTitle("1 node in graph");
 
-		for (int nbNodes = g.nodes().size();; nbNodes *= 2) {
-			for (int newNode = g.nodes().size(); newNode < nbNodes; ++newNode) {
+		for (int nbNodes = g.nbNodes();; nbNodes *= 2) {
+			for (int newNode = g.nbNodes(); newNode < nbNodes; ++newNode) {
+				int hook = ThreadLocalRandom.current().nextInt(g.nbNodes());
 				Node<Integer> newNodeNode = g.addNode(newNode);
 				newNodeNode.dynamic = false;
 				newNodeNode.size = 5;
 				newNodeNode.text = newNode + "";
 				newNodeNode.textBox = false;
-				int alreadyInGraph = ThreadLocalRandom.current()
-						.nextInt(g.nodes().size());
-				g.connect(newNode, alreadyInGraph);
+				g.connect(newNode, hook);
 			}
 
 			int waitS = 2;

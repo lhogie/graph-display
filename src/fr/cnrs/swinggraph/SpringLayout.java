@@ -5,18 +5,18 @@ import java.awt.Rectangle;
 public class SpringLayout<N> extends ForceBasedAlgo<N> {
 
 	@Override
-	public long step(GraphComponent<N> g, Rectangle r) {
+	public long step(Graph<N> g, Rectangle r) {
 		long n = 0;
 		double maxDistance = Math.sqrt(r.width * r.width + r.height * r.height);
 
-		for (Node<N> u : g.getGraph().nodes()) {
-			for (Node<N> v : g.getGraph().nodes()) {
+		for (Node<N> u : g.nodes()) {
+			for (Node<N> v : g.nodes()) {
 				if (u != v) {
 					double dx = v.x - u.x;
 					double dy = v.y - u.y;
 					double d = Math.sqrt(dx * dx + dy * dy);
 
-					boolean neighbors = g.getGraph().connected(u, v);
+					boolean neighbors = g.connected(u, v);
 
 					double factor = neighbors ? attractionFactor : repulsionFactor;
 

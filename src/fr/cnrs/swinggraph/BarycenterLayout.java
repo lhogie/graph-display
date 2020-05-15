@@ -5,16 +5,16 @@ import java.awt.Rectangle;
 public class BarycenterLayout<N> extends ForceBasedAlgo<N> {
 
 	@Override
-	public long step(GraphComponent<N> g, Rectangle r) {
+	public long step(Graph<N> g, Rectangle r) {
 		long n = 0;
 
-		for (Node<N> u : g.getGraph().nodes()) {
+		for (Node<N> u : g.nodes()) {
 			double xA = 0, yA = 0, xR = 0, yR = 0;
 			int nbA = 0, nbR = 0;
 
-			for (Node<N> v : g.getGraph().nodes()) {
+			for (Node<N> v : g.nodes()) {
 				if (u != v) {
-					boolean neighbors = g.getGraph().connected(u, v);
+					boolean neighbors = g.connected(u, v);
 
 					if (neighbors) {
 						xA += v.x;

@@ -74,7 +74,7 @@ public class GraphComponent<N> extends JPanel {
 				double minD = Double.MAX_VALUE;
 				Node<N> minN = null;
 
-				for (Node<N> u : graph.nodes.values()) {
+				for (Node<N> u : graph.nodes()) {
 					double dx = Math.abs(x - u.x);
 					double dy = Math.abs(y - u.y);
 					double d = Math.sqrt(dx * dx + dy * dy);
@@ -114,8 +114,8 @@ public class GraphComponent<N> extends JPanel {
 						}
 
 						synchronized (graph) {
-							layout.step(GraphComponent.this, layoutArea);
-							layout.center(GraphComponent.this, layoutArea);
+							layout.step(graph, layoutArea);
+							layout.center(graph, layoutArea);
 						}
 						++nbSteps;
 					}
@@ -168,23 +168,12 @@ public class GraphComponent<N> extends JPanel {
 			// g2.setRenderingHints(rh);
 			g2.setStroke(stroke);
 			// double samplingFactor = samplingFactor();
-			int nbEdgesDisplayed = 0;
 
-			for (Node<N> u : this.graph.nodes()) {
-				for (Node<N> v : u.successors) {
-					if (nbEdgesDisplayed++ < maxEdges) {
-						Color edgeColor = graph.getEdgeColor(u, v);
-						Stroke edgeStroke = graph.getEdgeStroke(u, v);
-						g2.setStroke(edgeStroke);
-						g2.setColor(edgeColor);
-						g2.drawLine(u.x, u.y, v.x, v.y);
-					}
-				}
-			}
+			drawEdges(g2);
 
-			for (Node<N> u : this.graph.nodes()) {
+			for (Node<N> u : graph.nodes()) {
 				if (u.size == 0) {
-					// do nothing, node can't be seen
+					// do nothing, the node can't be seen
 					continue;
 				}
 
@@ -253,6 +242,22 @@ public class GraphComponent<N> extends JPanel {
 			}
 		}
 
+	}
+
+	private void drawEdges(Graphics2D g2) {
+		int nbEdgesDisplayed = 0;
+
+		for (Node<N> u : graph.nodes()) {
+			for (EdgeCursor<N> e : graph.successors(u)) {
+				if (nbEdgesDisplayed++ > maxEdges) {
+					return;
+				}
+
+				g2.setStroke(graph.getEdgeStroke(e.src, e.dest));
+				g2.setColor(graph.getEdgeColor(e.src, e.dest));
+				g2.drawLine(e.src.x, e.src.y, e.dest.x, e.dest.y);
+			}
+		}
 	}
 
 	public double samplingFactor() {
