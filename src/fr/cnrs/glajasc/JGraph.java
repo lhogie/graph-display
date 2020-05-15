@@ -29,20 +29,20 @@ import javax.swing.border.EmptyBorder;
 
 public abstract class JGraph<N> extends JPanel {
 	private Layout<N> layout;
-	public long pauseDurationMs = 30;
+	public long pauseDurationMs = 1000 / 30;
 	Stroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 	Node<N> selectedNode;
 	Map<N, Node<N>> nodes = new HashMap<>();
+	private int nbEdges = 0;
+	public int maxEdges = Integer.MAX_VALUE;
 
 	int mt, mr, mb, ml;
 	Rectangle layoutArea;
 
 	public static Stroke line = new BasicStroke();
-	final static float dash1[] = {10.0f};
-	public static Stroke dotted = new BasicStroke(1.0f,
-            BasicStroke.CAP_BUTT,
-            BasicStroke.JOIN_MITER,
-            10.0f, dash1, 0.0f);
+	final static float dash1[] = { 10.0f };
+	public static Stroke dotted = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
+			BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f);
 
 	public JGraph() {
 		this(new WanderingNodes<N>());
@@ -59,18 +59,30 @@ public abstract class JGraph<N> extends JPanel {
 	public void connect(N src, N dest) {
 		Node<N> u = ensureExists(src);
 		Node<N> v = ensureExists(dest);
+		int formerDegree = u.successors.size();
 		u.successors.add(v);
+		int newDegree = u.successors.size();
+		nbEdges += newDegree - formerDegree;
 	}
 
-	public Node<N> add(N u) {
+	public int getNbEdges() {
+		return nbEdges;
+	}
+
+	public Node<N> addNode(N u) {
 		return ensureExists(u);
 	}
 
-	public void remove(N u) {
-		nodes.remove(u);
+	public void removeNode(N u) {
+		synchronized (this) {
+			nodes.remove(u);
+		}
 
 		for (Node<N> n : nodes()) {
+			int formerDegree = n.successors.size();
 			n.successors.remove(u);
+			int newDegree = n.successors.size();
+			nbEdges -= newDegree - formerDegree;
 		}
 	}
 
@@ -78,8 +90,11 @@ public abstract class JGraph<N> extends JPanel {
 		Node<N> n = nodes.get(o);
 
 		if (n == null) {
-			nodes.put(o, n = new Node<N>(o));
+			n = new Node<N>(o);
 			n.layoutSpecifics = layout.createSpecific();
+			synchronized (this) {
+				nodes.put(o, n);
+			}
 		}
 
 		return n;
@@ -132,17 +147,19 @@ public abstract class JGraph<N> extends JPanel {
 
 	public void updateValues() {
 		for (Node<N> n : nodes()) {
-			ImageIcon icon = getIcon(n.o);
+			if (n.dynamic) {
+				ImageIcon icon = getIcon(n.o);
 
-			if (n.originalIcon != icon) {
-				n.originalIcon = icon;
-				n.rescaledIcon = null;
+				if (n.originalIcon != icon) {
+					n.originalIcon = icon;
+					n.rescaledIcon = null;
+				}
+
+				n.size = getSize(n.o);
+				n.text = getText(n.o);
+				n.color = getLineColor(n.o);
+				n.fillColor = getFillColor(n.o);
 			}
-
-			n.size = getSize(n.o);
-			n.text = getText(n.o);
-			n.color = getLineColor(n.o);
-			n.fillColor = getFillColor(n.o);
 		}
 	}
 
@@ -159,8 +176,10 @@ public abstract class JGraph<N> extends JPanel {
 							shuffle(new Random());
 						}
 
-						layout.step(JGraph.this, layoutArea);
-						layout.center(JGraph.this, layoutArea);
+						synchronized (this) {
+							layout.step(JGraph.this, layoutArea);
+							layout.center(JGraph.this, layoutArea);
+						}
 						++nbSteps;
 					}
 				}
@@ -205,31 +224,47 @@ public abstract class JGraph<N> extends JPanel {
 	// RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING,
 	// RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-	private void doDrawing(Graphics g) {
+	private synchronized void doDrawing(Graphics g) {
 		updateValues();
 		Graphics2D g2 = (Graphics2D) g;
 		// g2.setRenderingHints(rh);
 		g2.setStroke(stroke);
+		// double samplingFactor = samplingFactor();
+		int nbEdgesDisplayed = 0;
 
 		for (Node<N> u : nodes()) {
 			for (Node<N> v : u.successors) {
-				Color edgeColor = getEdgeColor(u, v);
-				Stroke edgeStroke = getEdgeStroke(u, v);
-				g2.setStroke(edgeStroke);
-				g2.setColor(edgeColor);
-				g2.drawLine(u.x, u.y, v.x, v.y);
+				if (nbEdgesDisplayed++ < maxEdges) {
+					Color edgeColor = getEdgeColor(u, v);
+					Stroke edgeStroke = getEdgeStroke(u, v);
+					g2.setStroke(edgeStroke);
+					g2.setColor(edgeColor);
+					g2.drawLine(u.x, u.y, v.x, v.y);
+				}
 			}
 		}
 
 		for (Node<N> u : nodes()) {
 			if (u.size == 0) {
 				// do nothing, node can't be seen
+				continue;
 			}
-			else if (u.size == 1) {
+
+			if (u.color == null) {
+				u.color = Color.black;
+			}
+
+			if (u.size == 1) {
 				// draw a point
 				g.drawLine(u.x, u.y, u.x, u.y);
+				continue;
 			}
-			else if (u.originalIcon != null) {
+
+			if (u.fillColor == null) {
+				u.fillColor = Color.lightGray;
+			}
+
+			if (u.originalIcon != null) {
 				if (u.rescaledIcon == null) {
 					u.rescaledIcon = new ImageIcon(
 							u.originalIcon.getImage().getScaledInstance( - 1, u.size, 0));
@@ -239,7 +274,20 @@ public abstract class JGraph<N> extends JPanel {
 						(int) (u.x - u.rescaledIcon.getIconWidth() / 2),
 						(int) (u.y - u.rescaledIcon.getIconHeight() / 2), this);
 			}
-			else if (u.text != null) {
+
+			if ( ! u.textBox) {
+				g.setColor(u.fillColor);
+				g.fillOval(u.x - u.size / 2, u.y - u.size / 2, u.size, u.size);
+
+				Color lineColor = u.color;
+
+				if (lineColor != null) {
+					g.setColor(lineColor);
+					g.drawOval(u.x - u.size / 2, u.y - u.size / 2, u.size, u.size);
+				}
+			}
+
+			if (u.text != null) {
 				GlyphVector vec = GlyphVectorCache.get(u.text);
 
 				if (vec == null) {
@@ -253,36 +301,26 @@ public abstract class JGraph<N> extends JPanel {
 				int textW = (int) vec.getVisualBounds().getWidth();
 				int textH = (int) vec.getVisualBounds().getHeight();
 
-				if (u.fillColor != null) {
+				if (u.textBox) {
+					g2.drawRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
+							textW + 2 * gap, textH + 2 * gap);
 					g.setColor(u.fillColor);
 					g2.fillRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
 							textW + 2 * gap, textH + 2 * gap);
 				}
 
-				if (u.color != null) {
-					g.setColor(u.color);
-					g2.drawRect(u.x - textW / 2 - gap, u.y - textH / 2 - gap,
-							textW + 2 * gap, textH + 2 * gap);
-					g2.drawGlyphVector(vec, u.x - textW / 2, u.y + textH / 2 + 2);
-				}
-
-			}
-			else {
-				Color fillColor = u.fillColor;
-
-				if (fillColor != null) {
-					g.setColor(fillColor);
-					g.fillOval(u.x - u.size / 2, u.y - u.size / 2, u.size, u.size);
-				}
-
-				Color lineColor = u.color;
-
-				if (lineColor != null) {
-					g.setColor(lineColor);
-					g.drawOval(u.x - u.size / 2, u.y - u.size / 2, u.size, u.size);
-				}
+				g.setColor(u.color);
+				g2.drawGlyphVector(vec, u.x - textW / 2, u.y + textH / 2 + 2);
 			}
 		}
+	}
+
+	public double samplingFactor() {
+		if (nbEdges == 0) {
+			return 1;
+		}
+
+		return Math.min(1, maxEdges / (double) nbEdges);
 	}
 
 	protected abstract Color getLineColor(N u);

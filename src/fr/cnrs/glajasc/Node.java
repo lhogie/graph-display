@@ -11,16 +11,18 @@ public class Node<N> {
 		this.o = e;
 	}
 
-	Collection<Node<N>> successors = new HashSet<>();
-
-	Object layoutSpecifics;
-	boolean stillHere;
 	public final N o;
+	final Collection<Node<N>> successors = new HashSet<>();
 	int x, y;
+	Object layoutSpecifics;
+	public boolean dynamic = true;
+
 	public ImageIcon originalIcon;
 	public ImageIcon rescaledIcon;
 	public int size;
 	public String text;
 	public Color fillColor;
 	public Color color;
+	public boolean textBox = true;
+
 }

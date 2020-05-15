@@ -16,7 +16,7 @@ public class WanderingNodes<N> extends Layout<N> {
 	@Override
 	public long step(JGraph<N> g, Rectangle r) {
 		long nbChanges = 0;
-		
+
 		for (Node<N> u : g.nodes()) {
 			if (g.selectedNode == u) {
 				continue;
@@ -53,10 +53,10 @@ public class WanderingNodes<N> extends Layout<N> {
 				u.y = r.y + r.height;
 				mm.dx = mm.dy = 0;
 			}
-			
+
 			++nbChanges;
 		}
-		
+
 		return nbChanges;
 	}
 
