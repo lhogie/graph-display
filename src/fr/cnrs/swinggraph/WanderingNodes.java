@@ -17,7 +17,7 @@ public class WanderingNodes<N> extends Layout<N> {
 	public long step(GraphComponent<N> g, Rectangle r) {
 		long nbChanges = 0;
 
-		for (Node<N> u : g.nodes()) {
+		for (Node<N> u : g.getGraph().nodes()) {
 			if (g.selectedNode == u) {
 				continue;
 			}

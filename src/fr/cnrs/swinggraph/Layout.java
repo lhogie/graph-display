@@ -37,12 +37,12 @@ public abstract class Layout<N> {
 		int x = 0, y = 0;
 		int nbNodes = 0;
 
-		for (Node<N> n : g.nodes.values()) {
+		for (Node<N> n : g.getGraph().nodes()) {
 			x += n.x;
 			y += n.y;
 			++nbNodes;
 		}
-		
+
 		if (nbNodes == 0) {
 			return;
 		}
@@ -53,7 +53,7 @@ public abstract class Layout<N> {
 		int xshift = r.width / 2 - x;
 		int yshift = r.height / 2 - y;
 
-		for (Node<N> n : g.nodes.values()) {
+		for (Node<N> n : g.getGraph().nodes()) {
 			n.x += xshift;
 			n.y += yshift;
 		}

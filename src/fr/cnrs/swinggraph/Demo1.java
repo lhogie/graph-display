@@ -8,7 +8,7 @@ public class Demo1 {
 	public static void main(String[] args) {
 		System.out.println("Running " + Demo1.class);
 
-		DefaultGraph<Integer> g = new DefaultGraph<>();
+		Graph<Integer> g = new DefaultGraph<>();
 		int nbNodes = 100;
 
 		for (int i = 0; i < nbNodes; ++i) {
@@ -17,8 +17,7 @@ public class Demo1 {
 
 		JFrame f = new JFrame("Just a graph");
 		f.setSize(800, 600);
-		f.setContentPane(g.bundleComponent());
+		f.setContentPane(new GraphComponent<>(g).bundleComponent());
 		f.setVisible(true);
-		g.start();
 	}
 }

@@ -8,13 +8,13 @@ public class BarycenterLayout<N> extends ForceBasedAlgo<N> {
 	public long step(GraphComponent<N> g, Rectangle r) {
 		long n = 0;
 
-		for (Node<N> u : g.nodes()) {
+		for (Node<N> u : g.getGraph().nodes()) {
 			double xA = 0, yA = 0, xR = 0, yR = 0;
 			int nbA = 0, nbR = 0;
 
-			for (Node<N> v : g.nodes()) {
+			for (Node<N> v : g.getGraph().nodes()) {
 				if (u != v) {
-					boolean neighbors = g.connected(u, v);
+					boolean neighbors = g.getGraph().connected(u, v);
 
 					if (neighbors) {
 						xA += v.x;

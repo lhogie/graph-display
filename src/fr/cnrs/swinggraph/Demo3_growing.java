@@ -10,16 +10,15 @@ public class Demo3_growing {
 	public static void main(String[] args) {
 		System.out.println("Running " + Demo3_growing.class);
 
-		DefaultGraph<Integer> g = new DefaultGraph<>();
-
+		Graph<Integer> g = new DefaultGraph<>();
+		GraphComponent<Integer> c = new GraphComponent<>(g);
 		JFrame f = new JFrame();
 		f.setSize(800, 600);
-		f.setContentPane(g.bundleComponent());
+		f.setContentPane(c.bundleComponent());
 		f.setVisible(true);
-		g.start();
-		g.maxEdges = 10;
+		c.maxEdges = 10;
 
-		g.ensureExists(0);
+		g.addNode(0);
 		f.setTitle("1 node in graph");
 
 		for (int nbNodes = g.nodes().size();; nbNodes *= 2) {
@@ -35,8 +34,8 @@ public class Demo3_growing {
 			}
 
 			int waitS = 2;
-			f.setTitle(nbNodes + " nodes in graph. " + g.getNbEdges() + " edge(s). Sampling factor: " + g.samplingFactor() + ". Waiting "
-					+ waitS + "s.");
+			f.setTitle(nbNodes + " nodes in graph. " + g.getNbEdges()
+					+ " edge(s). Waiting " + waitS + "s.");
 			Threads.sleepMs(1000 * waitS);
 		}
 	}

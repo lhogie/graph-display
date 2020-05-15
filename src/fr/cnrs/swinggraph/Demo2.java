@@ -16,7 +16,7 @@ public class Demo2 {
 				new JavaResource(Demo2.class, "animal.png").getByteArray());
 
 		// creates a graphical graph using "wandering nodes" layout algorithm
-		GraphComponent<String> g = new GraphComponent<String>(new WanderingNodes<String>()) {
+		Graph<String> g = new DefaultGraph<String>() {
 			@Override
 			protected String getText(String u) {
 				if (u.equals("animal")) {
@@ -81,7 +81,7 @@ public class Demo2 {
 				if (u.o.equalsIgnoreCase("animal")) {
 					return GraphComponent.dotted;
 				}
-				
+
 				return GraphComponent.line;
 			}
 		};
@@ -91,13 +91,10 @@ public class Demo2 {
 		g.connect("animal", "yellow");
 		g.connect("animal", "red");
 
-		g.pauseDurationMs = 1000/30;
-
 		JFrame f = new JFrame("Just a coloured graph");
 		f.setSize(800, 600);
 
-		f.setContentPane(g.bundleComponent());
+		f.setContentPane(new GraphComponent<>(g).bundleComponent());
 		f.setVisible(true);
-		g.start();
 	}
 }

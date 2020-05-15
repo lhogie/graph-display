@@ -5,8 +5,7 @@ import java.awt.Stroke;
 
 import javax.swing.ImageIcon;
 
-public class DefaultGraph<N> extends GraphComponent<N>{
-
+public class DefaultGraph<N> extends Graph<N> {
 
 	@Override
 	protected Color getLineColor(N u) {
