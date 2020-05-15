@@ -1,4 +1,4 @@
-package fr.cnrs.swinggraph;
+package fr.cnrs.swinggraph.demo;
 
 import java.awt.Color;
 import java.awt.Stroke;
@@ -6,6 +6,10 @@ import java.awt.Stroke;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
+import fr.cnrs.swinggraph.DefaultGraph;
+import fr.cnrs.swinggraph.Graph;
+import fr.cnrs.swinggraph.GraphComponent;
+import fr.cnrs.swinggraph.Node;
 import toools.io.JavaResource;
 
 public class Demo2 {

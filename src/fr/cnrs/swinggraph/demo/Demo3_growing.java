@@ -1,9 +1,13 @@
-package fr.cnrs.swinggraph;
+package fr.cnrs.swinggraph.demo;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.swing.JFrame;
 
+import fr.cnrs.swinggraph.DefaultGraph;
+import fr.cnrs.swinggraph.Graph;
+import fr.cnrs.swinggraph.GraphComponent;
+import fr.cnrs.swinggraph.Node;
 import toools.thread.Threads;
 
 public class Demo3_growing {

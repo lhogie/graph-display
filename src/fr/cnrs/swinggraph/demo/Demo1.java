@@ -1,8 +1,12 @@
-package fr.cnrs.swinggraph;
+package fr.cnrs.swinggraph.demo;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.swing.JFrame;
+
+import fr.cnrs.swinggraph.DefaultGraph;
+import fr.cnrs.swinggraph.Graph;
+import fr.cnrs.swinggraph.GraphComponent;
 
 public class Demo1 {
 	public static void main(String[] args) {
